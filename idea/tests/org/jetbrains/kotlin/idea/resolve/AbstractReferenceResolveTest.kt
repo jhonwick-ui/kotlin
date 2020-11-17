@@ -34,8 +34,13 @@ abstract class AbstractReferenceResolveTest : KotlinLightPlatformCodeInsightFixt
 
     protected open fun doTest(path: String) {
         assert(path.endsWith(".kt")) { path }
-        myFixture.configureWithExtraFile(path, ".Data")
+        initExtraFiles(path)
         performChecks()
+    }
+
+    private fun initExtraFiles(path: String) {
+        myFixture.configureWithExtraFile(path, ".Data")
+        InTextDirectivesUtils.findStringWithPrefixes(myFixture.file.text, MULTIRESOLVE)
     }
 
     protected fun performChecks() {
@@ -97,6 +102,7 @@ abstract class AbstractReferenceResolveTest : KotlinLightPlatformCodeInsightFixt
     companion object {
         val MULTIRESOLVE: String = "MULTIRESOLVE"
         val REF_EMPTY: String = "REF_EMPTY"
+        val EXTERNAL_FILE: String = "EXTERNAL_FILE"
 
         fun readResolveData(fileText: String, index: Int, refMarkerText: String = "REF"): ExpectedResolveData {
             val shouldBeUnresolved = InTextDirectivesUtils.isDirectiveDefined(fileText, REF_EMPTY)

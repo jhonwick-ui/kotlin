@@ -246,6 +246,9 @@ internal object FirReferenceResolveHelper {
                     } else fir.calleeReference
                 return listOfNotNull(calleeReference.toTargetSymbol(session, symbolBuilder))
             }
+            is FirVariableAssignment -> {
+                return listOfNotNull(fir.calleeReference.toTargetSymbol(session, symbolBuilder))
+            }
             else -> {
                 // Handle situation when we're in the middle/beginning of qualifier
                 // <caret>A.B.C.foo() or A.<caret>B.C.foo()
