@@ -61,9 +61,11 @@ internal class FirLightAccessorMethodForSymbol(
             else AnnotationUseSiteTarget.PROPERTY_SETTER
 
     private val _annotations: List<PsiAnnotation> by lazyPub {
+        val nullabilityType = containingPropertySymbol.type
+            .getTypeNullability(containingPropertySymbol, FirResolvePhase.IMPLICIT_TYPES_BODY_RESOLVE)
         containingPropertySymbol.computeAnnotations(
             parent = this,
-            nullability = NullabilityType.Unknown,
+            nullability = nullabilityType,
             annotationUseSiteTarget = accessorSite,
         )
     }
