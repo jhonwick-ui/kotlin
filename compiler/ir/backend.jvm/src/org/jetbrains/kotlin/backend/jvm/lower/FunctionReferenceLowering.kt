@@ -14,8 +14,8 @@ import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
 import org.jetbrains.kotlin.backend.jvm.JvmLoweredDeclarationOrigin
 import org.jetbrains.kotlin.backend.jvm.ir.*
 import org.jetbrains.kotlin.backend.jvm.lower.inlineclasses.InlineClassAbi
-import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
+import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
 import org.jetbrains.kotlin.ir.builders.*
 import org.jetbrains.kotlin.ir.builders.declarations.addConstructor
@@ -194,7 +194,8 @@ internal class FunctionReferenceLowering(private val context: JvmBackendContext)
                 else null,
             )
             createImplicitParameterDeclarationWithWrappedDescriptor()
-            copyAttributes(irFunctionReference)
+            context.putLocalClassType(this, context.getCallableReferenceClassType(irFunctionReference))
+            context.originalCallableReferenceForClass[this] = irFunctionReference
             if (isLambda) {
                 metadata = irFunctionReference.symbol.owner.metadata
             }
@@ -481,6 +482,7 @@ internal class FunctionReferenceLowering(private val context: JvmBackendContext)
                         irFunctionReference.reflectionTarget, null
                     ).apply {
                         copyTypeArgumentsFrom(irFunctionReference)
+                        backendContext.copyCallableReference(irFunctionReference, this)
                     }
                 )
             }
