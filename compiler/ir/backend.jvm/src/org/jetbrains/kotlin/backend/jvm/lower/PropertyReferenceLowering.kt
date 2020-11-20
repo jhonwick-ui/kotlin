@@ -126,7 +126,7 @@ private class PropertyReferenceLowering(val context: JvmBackendContext) : IrElem
             returnType = method.returnType
             visibility = method.visibility
             modality = Modality.OPEN
-            origin = JvmLoweredDeclarationOrigin.GENERATED_MEMBER_IN_CALLABLE_REFERENCE
+            origin = JvmLoweredDeclarationOrigin.SYNTHETIC
         }.apply {
             overriddenSymbols += method.symbol
             dispatchReceiverParameter = thisReceiver!!.copyTo(this)
@@ -412,7 +412,7 @@ private class PropertyReferenceLowering(val context: JvmBackendContext) : IrElem
         }
 
         referenceClass.addConstructor {
-            origin = JvmLoweredDeclarationOrigin.GENERATED_MEMBER_IN_CALLABLE_REFERENCE
+            origin = JvmLoweredDeclarationOrigin.SYNTHETIC
             isPrimary = true
         }.apply {
             if (hasBoundReceiver) {
