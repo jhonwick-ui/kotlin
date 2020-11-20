@@ -507,7 +507,13 @@ class KotlinCoreEnvironment private constructor(
 
             registerApplicationExtensionPointsAndExtensionsFrom(configuration, "extensions/compiler.xml")
 
-            if (Thread.currentThread().contextClassLoader.loadClass("com.intellij.psi.compiled.ClassFileDecompilers") != null) {
+            val isNotShaded = try {
+                Thread.currentThread().contextClassLoader.loadClass("com.intellij.psi.compiled.ClassFileDecompilers")
+                true
+            } catch (e: ClassNotFoundException) {
+                false
+            }
+            if (isNotShaded) {
                 registerApplicationExtensionPointsAndExtensionsFrom(configuration, "extensions/core.xml")
             } else {
                 registerApplicationExtensionPointsAndExtensionsFrom(configuration, "extensions/core-embeddable.xml")
