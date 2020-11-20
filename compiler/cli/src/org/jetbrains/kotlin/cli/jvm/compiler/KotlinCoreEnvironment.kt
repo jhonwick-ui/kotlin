@@ -509,7 +509,12 @@ class KotlinCoreEnvironment private constructor(
             val applicationEnvironment = KotlinCoreApplicationEnvironment.create(parentDisposable, unitTestMode)
 
             registerApplicationExtensionPointsAndExtensionsFrom(configuration, "extensions/compiler.xml")
-            registerApplicationExtensionPointsAndExtensionsFrom(configuration, "extensions/core.xml")
+
+            if (Thread.currentThread().contextClassLoader.loadClass("com.intellij.psi.compiled.ClassFileDecompilers") != null) {
+                registerApplicationExtensionPointsAndExtensionsFrom(configuration, "extensions/core.xml")
+            } else {
+                registerApplicationExtensionPointsAndExtensionsFrom(configuration, "extensions/core-embeddable.xml")
+            }
 
             registerApplicationServicesForCLI(applicationEnvironment)
             registerApplicationServices(applicationEnvironment)
