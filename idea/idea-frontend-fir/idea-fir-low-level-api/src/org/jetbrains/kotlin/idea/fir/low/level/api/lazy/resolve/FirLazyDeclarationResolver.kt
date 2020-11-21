@@ -25,11 +25,36 @@ import org.jetbrains.kotlin.idea.fir.low.level.api.util.checkCanceled
 import org.jetbrains.kotlin.idea.fir.low.level.api.util.executeWithoutPCE
 import org.jetbrains.kotlin.idea.fir.low.level.api.util.findSourceNonLocalFirDeclaration
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
+import org.jetbrains.kotlin.util.containingNonLocalDeclaration
 
 internal class FirLazyDeclarationResolver(
     private val firFileBuilder: FirFileBuilder
 ) {
+    private fun FirDeclaration.resolveNonLocalContainerIfNeeded(
+        moduleFileCache: ModuleFileCache,
+        towerDataContextCollector: FirTowerDataContextCollector? = null,
+    ) {
+        val isLocal = when (this) {
+            is FirRegularClass -> isLocal
+            is FirSimpleFunction -> isLocal
+            else -> false
+        }
+
+        if (isLocal) {
+            val containerDeclaration = ktDeclaration.containingNonLocalDeclaration()
+                ?: error("Cannot find containing declaration for ${ktDeclaration::class.qualifiedName}")
+            val firContainerDeclaration = containerDeclaration
+                .findSourceNonLocalFirDeclaration(firFileBuilder, session.firSymbolProvider, moduleFileCache)
+            lazyResolveDeclaration(
+                firContainerDeclaration,
+                moduleFileCache,
+                FirResolvePhase.IMPLICIT_TYPES_BODY_RESOLVE,
+                towerDataContextCollector
+            )
+        }
+
+    }
+
     fun lazyResolveDeclaration(
         declaration: FirDeclaration,
         moduleFileCache: ModuleFileCache,
@@ -39,6 +64,8 @@ internal class FirLazyDeclarationResolver(
         reresolveFile: Boolean = false,
     ) {
         if (declaration.resolvePhase >= toPhase) return
+
+        declaration.resolveNonLocalContainerIfNeeded(moduleFileCache, towerDataContextCollector)
 
         if (declaration is FirPropertyAccessor || declaration is FirTypeParameter) {
             val ktContainingProperty = when (val ktDeclaration = declaration.ktDeclaration) {
